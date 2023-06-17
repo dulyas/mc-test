@@ -1,10 +1,8 @@
 import config from '@/config';
 import express from 'express';
-import routes from '@/routes';
+import router from '@/router'
 import cors from 'cors';
-import * as HTTP from "http";
-import * as IO from "socket.io";
-import _io from './socket';
+import { createServer } from "http";
 
 
 
@@ -16,23 +14,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 
-app.use('/api', routes);
+app.use('/api', router);
 
-const server = HTTP.createServer(app)
-
-const io = new IO.Server(server, {
-  cors: {
-      origin: "*"
-  },
-  pingInterval: 5000,
-  path: "/socket/"
-  // transports: ["websocket"]
-});
-
-_io(io)
+const server = createServer(app)
 
 
-export const start = () => {
+
+export const startApp = () => {
   const _server = server.listen(config.port, async (err?: Error) => {
     if (err) {
       console.error(`Error : ${err}`);
@@ -47,6 +35,5 @@ export const start = () => {
 
 
 
-  export default app;
+export default app;
 
-// app.use('/api', routes);
