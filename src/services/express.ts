@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 
-app.use('/api', router);
+app.use('/', router);
 
 const server = createServer(app)
 

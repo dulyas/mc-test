@@ -1,6 +1,12 @@
 import config from "@/config";
-import { format, parseISO } from "date-fns";
+import moment from 'moment'
+import { types } from 'pg'
 
+types.setTypeParser(types.builtins.DATE, val => moment(val).format('YYYY-MM-DD'));
+types.setTypeParser(types.builtins.TIME, val => moment(val).format('HH:mm:ss'));
+types.setTypeParser(types.builtins.TIMETZ, val => moment(val).format('HH:mm:ss'));
+types.setTypeParser(types.builtins.TIMESTAMP, val => moment(val).format('YYYY-MM-DD HH:mm:ss'));
+types.setTypeParser(types.builtins.TIMESTAMPTZ, val => moment(val).format('YYYY-MM-DD HH:mm:ss'));
 
 
 export default {
@@ -10,16 +16,6 @@ export default {
 			database: config.db.database,
 			user: config.db.username,
 			password: config.db.password,
-			typeCast: function (field: any, next: any) {
-				if (field.type == "DATE") {
-					try {
-						return format(parseISO(field.string()), "yyyy.MM.dd");
-					} catch (e) {
-						return null;
-					}
-				}
-				return next();
-			},
 		},
 		pool: {
 			min: 2,
