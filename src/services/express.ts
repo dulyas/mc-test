@@ -21,7 +21,7 @@ const server = createServer(app)
 
 
 export const startApp = () => {
-  const _server = server.listen(config.port, async (err?: Error) => {
+  return server.listen(config.port, async (err?: Error) => {
     if (err) {
       console.error(`Error : ${err}`);
       process.exit(-1);
@@ -31,6 +31,7 @@ export const startApp = () => {
     console.log(`Database: ${config.db.database}`);
   });
 
+  
 };
 
 
