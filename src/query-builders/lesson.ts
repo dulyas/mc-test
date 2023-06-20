@@ -17,9 +17,9 @@ export const teacherBuilder = (builder: QueryBuilder<Lesson, Lesson[]>, teacherI
         return builder
     } else if (teacherIds.includes(',')) {
         const arrayOfTeacherIds = teacherIds.trim().split(',')
-        return builder.joinRelated('teachers').whereIn('id', arrayOfTeacherIds)
+        return builder.whereIn('teachers.id', arrayOfTeacherIds)
     } else {
-        return builder.joinRelated('teachers').where('id', +teacherIds)
+        return builder.where('teachers.id', +teacherIds)
     }
 }
 
@@ -61,10 +61,10 @@ export const dateBuilder = (builder: QueryBuilder<Lesson, Lesson[]>, date: strin
 }
 
 
-export const studentsCountQuery = Lesson.query()
-.select(
-'lessons.*',
-Lesson.relatedQuery('students').where('visit', true).count().as('visitCount'),
-Lesson.relatedQuery('students').count().as('studentsCount')
-).as('countQuery');
+// export const studentsCountQuery = Lesson.query()
+// .select(
+// 'lessons.*',
+// Lesson.relatedQuery('students').where('visit', true).count().as('visitCount'),
+// Lesson.relatedQuery('students').count().as('studentsCount')
+// ).as('countQuery');
 

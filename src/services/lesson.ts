@@ -1,22 +1,51 @@
 
 import { Lesson, LessonTeacher } from "@/models"
-import { statusBuilder, teacherBuilder, studentBuilder, dateBuilder, studentsCountQuery } from "@/query-builders/lesson"
+import { statusBuilder, teacherBuilder, studentBuilder, dateBuilder } from "@/query-builders/lesson"
 import moment from 'moment'
 
 
 export const getLessonsService = async (date: string, status: string, teacherIds: string, studentsCount: string, page: number, lessonsPerPage: number): Promise<Lesson[]> => {
 
+    if (status && +status !== 1 && +status !== 2) throw new Error('Status must be 1 or 0') 
+
+    if (date) {
+        if (date.includes(',')) {
+            for (const dateEl of date.trim().split(',')) {
+                if (!moment(dateEl, 'YYYY-MM-DD', true).isValid()) throw new Error('date is not valid, please use pattern `YYYY-MM-DD` or `YYYY-MM-DD,YYYY-MM-DD`')
+            }
+        } else {
+
+            if (!moment(date, 'YYYY-MM-DD', true).isValid()) throw new Error('date is not valid, please use pattern `YYYY-MM-DD` or `YYYY-MM-DD,YYYY-MM-DD`')
+        }
+    }
 
     const lessons = await Lesson.query()
-        .from(studentsCountQuery) // считаем количество записанных и посетивших учеников
+        .select(
+        'lessons.*',
+        Lesson.relatedQuery('students').where('visit', true).count().as('visitCount'),
+        Lesson.relatedQuery('students').count().as('studentsCount'),
+        )
+
+        .withGraphJoined('[teachers, students]')
         .where(builder => statusBuilder(builder, status)) // фильтруем
         .andWhere(builder => teacherBuilder(builder, teacherIds))
         .andWhere(builder => studentBuilder(builder, studentsCount))
         .andWhere(builder => dateBuilder(builder, date))
-        .withGraphFetched('[teachers, students]') // подгружаем учителей и учеников
-        .select(['id', 'date', 'title', 'status', 'visitCount']) // убираем каунтер записанных учеников
+
         .limit(lessonsPerPage) // задаем лимит на страницу
         .offset((page - 1) * lessonsPerPage) // задаем страницу
+        
+        // .returning(['id', 'date', 'title', 'status', 'visitCount']) // убираем каунтер записанных учеников
+    // const lessons = await Lesson.query()
+    //     .from(studentsCountQuery) // считаем количество записанных и посетивших учеников
+    //     .where(builder => statusBuilder(builder, status)) // фильтруем
+    //     .andWhere(builder => teacherBuilder(builder, teacherIds))
+    //     .andWhere(builder => studentBuilder(builder, studentsCount))
+    //     .andWhere(builder => dateBuilder(builder, date))
+    //     .withGraphFetched('[students, teachers]') // подгружаем учителей и учеников
+    //     .select(['id', 'date', 'title', 'status', 'visitCount']) // убираем каунтер записанных учеников
+    //     .limit(lessonsPerPage) // задаем лимит на страницу
+    //     .offset((page - 1) * lessonsPerPage) // задаем страницу
 
     return lessons
 }
